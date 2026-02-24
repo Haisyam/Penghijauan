@@ -62,5 +62,6 @@ jobs:
         uses: ad-m/github-push-action@v0.6.0
         with:
           force: false
+          branch: ${{ github.ref_name }}
           directory: "."
           github_token: ${{ secrets.GITHUB_TOKEN }}
