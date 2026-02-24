@@ -1,0 +1,66 @@
+name: Commit Now
+
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: "Email"
+        required: true
+        default: "muhamadhaisyamkhairizmi@gmail.com"
+      username:
+        description: "Username"
+        required: true
+        default: "Haisyam"
+      commit:
+        description: "Commit"
+        required: true
+        default: "Penghijauan"
+      limit:
+        description: "Limit Commit"
+        required: true
+        default: 20
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  auto_commit:
+    runs-on: ubuntu-latest
+    env:
+      COMMIT_EMAIL: ${{ github.event.inputs.email || 'muhamadhaisyamkhairizmi@gmail.com' }}
+      COMMIT_USERNAME: ${{ github.event.inputs.username || 'Haisyam' }}
+      COMMIT_MESSAGE: ${{ github.event.inputs.commit || 'Penghijauan' }}
+      COMMIT_LIMIT: ${{ github.event.inputs.limit || '20' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set Config
+        run: |
+          git config --local user.email "$COMMIT_EMAIL"
+          git config --local user.name "$COMMIT_USERNAME"
+
+      - name: Do It
+        run: |
+          limit="$COMMIT_LIMIT"
+
+          for i in $(seq 1 "$limit")
+          do
+            d="$i-$(date '+%Y-%m-%dT%H:%M:%SZ')"
+            echo $d > LAST_UPDATED
+            git add -A
+            git commit -m "$COMMIT_MESSAGE #$i" || echo "No changes to commit on iteration $i"
+          done
+
+      - name: GitHub Push
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          force: false
+          directory: "."
+          github_token: ${{ secrets.GITHUB_TOKEN }}
